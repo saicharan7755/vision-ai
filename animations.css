@@ -1,0 +1,317 @@
+/**
+ * Loading sequence, ambient background and micro-interactions.
+ * Pure CSS keyframes — no animation library in the hot path.
+ */
+
+/* ── Ambient background mesh ────────────────────────────────────── */
+@keyframes drift-a {
+  0%,
+  100% {
+    transform: translate(-6%, -4%) scale(1);
+  }
+  50% {
+    transform: translate(4%, 6%) scale(1.1);
+  }
+}
+@keyframes drift-b {
+  0%,
+  100% {
+    transform: translate(5%, 6%) scale(1.05);
+  }
+  50% {
+    transform: translate(-5%, -5%) scale(0.96);
+  }
+}
+.ambient-a {
+  animation: drift-a 38s ease-in-out infinite;
+}
+.ambient-b {
+  animation: drift-b 46s ease-in-out infinite;
+}
+
+/* ── App entrance ───────────────────────────────────────────────── */
+@keyframes app-in {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.app-enter {
+  animation: app-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Splash: full sequence ──────────────────────────────────────────
+   Step 1 (0.05–1.15s)  outline stroke of the "V" draws
+   Step 2 (1.05–1.65s)  solid orange fill washes in
+   Step 3 (1.55–2.25s)  orbital swoosh sweeps left → right
+   Step 4 (2.30–2.95s)  mark settles, wordmark + tagline rise in
+   Step 5 (2.98–3.48s)  crossfade out to the dashboard
+   ------------------------------------------------------------------ */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Step 1 — outline draw (perimeter of the chevron ≈ 306 units) */
+@keyframes v-stroke-draw {
+  from {
+    stroke-dashoffset: 310;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.splash-v-stroke {
+  stroke-dasharray: 310;
+  stroke-dashoffset: 310;
+  animation: v-stroke-draw 1.1s cubic-bezier(0.65, 0, 0.35, 1) 0.05s forwards;
+}
+
+/* The outline fades as the solid fill takes over, so edges never double up. */
+@keyframes v-stroke-retire {
+  to {
+    opacity: 0;
+  }
+}
+.splash-v-stroke-retire {
+  animation: v-stroke-retire 0.4s ease 1.25s forwards;
+}
+
+/* Step 2 — solid orange fill */
+@keyframes v-fill-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.splash-v-fill {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: v-fill-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 1.05s forwards;
+}
+
+/* Step 3 — orbital swoosh sweeps left → right (arc length ≈ 115 units) */
+@keyframes swoosh-sweep {
+  from {
+    stroke-dashoffset: 120;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.splash-swoosh {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: swoosh-sweep 0.7s cubic-bezier(0.4, 0, 0.2, 1) 1.55s forwards;
+}
+
+/* Step 4 — mark settles upward and scales down to make room for the wordmark */
+@keyframes mark-settle {
+  to {
+    transform: translateY(-18px) scale(0.62);
+  }
+}
+.splash-mark {
+  transform-origin: center;
+  animation: mark-settle 0.55s cubic-bezier(0.34, 1.28, 0.5, 1) 2.3s both;
+}
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.splash-title {
+  opacity: 0;
+  animation: fade-rise 0.5s ease-out 2.42s forwards;
+}
+.splash-tagline {
+  opacity: 0;
+  animation: fade-rise 0.5s ease-out 2.72s forwards;
+}
+/* Step 5 — crossfade out while the dashboard fades in underneath */
+@keyframes splash-out {
+  to {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+.splash-exit {
+  animation: splash-out 0.5s ease-in-out 2.98s both;
+}
+
+/* ── Splash: shortened (returning visit) ────────────────────────── */
+.splash-short-mark {
+  opacity: 0;
+  animation: fade-in 0.3s ease-out forwards;
+}
+@keyframes splash-short-out {
+  to {
+    opacity: 0;
+  }
+}
+.splash-short-exit {
+  animation: splash-short-out 0.35s ease 0.42s both;
+}
+
+/* ── Face overlay: HUD corner brackets ──────────────────────────────
+   Arm length is set inline (it scales with the box); only the weight and
+   corner treatment live here. The 4px outer radius approximates the
+   round line-cap of a canvas stroke — CSS borders cannot have real caps,
+   and a rounded corner reads the same at these sizes. */
+.fc {
+  position: absolute;
+  width: 15px; /* inline style overrides this per-box */
+  height: 15px;
+  pointer-events: none;
+}
+.fc-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2.5px solid currentColor;
+  border-left: 2.5px solid currentColor;
+  border-top-left-radius: 4px;
+}
+.fc-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2.5px solid currentColor;
+  border-right: 2.5px solid currentColor;
+  border-top-right-radius: 4px;
+}
+.fc-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2.5px solid currentColor;
+  border-left: 2.5px solid currentColor;
+  border-bottom-left-radius: 4px;
+}
+.fc-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2.5px solid currentColor;
+  border-right: 2.5px solid currentColor;
+  border-bottom-right-radius: 4px;
+}
+.face-occluded {
+  opacity: 0.5;
+}
+.face-occluded .fc {
+  border-style: dashed;
+}
+/*
+ * The entrance animates `transform`, which would otherwise override the
+ * inline head-roll rotation for its whole duration — the box would scale
+ * up unrotated and then snap to angle. Threading the angle through a
+ * custom property keeps the animation and the static transform in
+ * agreement, so a face that appears already tilted animates in tilted.
+ */
+@keyframes face-in {
+  from {
+    opacity: 0;
+    transform: rotate(var(--face-rotation, 0rad)) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--face-rotation, 0rad)) scale(1);
+  }
+}
+.face-enter {
+  transform-origin: center;
+  animation: face-in 200ms ease-out both;
+}
+@keyframes face-out {
+  to {
+    opacity: 0;
+  }
+}
+.face-exit {
+  animation: face-out 250ms ease-in both;
+}
+@keyframes id-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.id-pop {
+  animation: id-pop 280ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Micro-interactions ─────────────────────────────────────────── */
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.045);
+  }
+}
+.pulse-soft {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}
+
+@keyframes scan-sweep {
+  0% {
+    top: -1%;
+    opacity: 1;
+  }
+  96% {
+    opacity: 1;
+  }
+  100% {
+    top: 101%;
+    opacity: 0;
+  }
+}
+.scan-sweep {
+  animation: scan-sweep 1.2s cubic-bezier(0.45, 0, 0.3, 1) both;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-slow {
+  animation: spin 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-a,
+  .ambient-b,
+  .pulse-soft {
+    animation: none;
+  }
+  .face-enter,
+  .id-pop {
+    animation-duration: 1ms;
+  }
+}

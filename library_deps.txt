@@ -1,0 +1,18 @@
+Adafruit NeoPixel          1.12.0   (WS2812B RGB LED ring)
+LiquidCrystal I2C          1.1.2    (16x2 I2C LCD backpack, address 0x27)
+Servo                      1.2.2    (SG90 pulse control — bundled with the IDE)
+Wire                       1.0      (I2C bus — bundled with the IDE)
+
+# ── Install via Arduino IDE ──────────────────────────────────────────
+# Sketch → Include Library → Manage Libraries… then search for each name
+# above and click Install. `Servo` and `Wire` ship with the IDE and need
+# no separate install.
+#
+# ── Verify installation ──────────────────────────────────────────────
+# After installing, this should compile with no missing-header errors:
+#   cd arduino && arduino-cli compile --fqbn arduino:avr:uno vision_ai_hardware.ino
+#
+# ── Notes ────────────────────────────────────────────────────────────
+# If your LCD backpack uses address 0x3F instead of 0x27 (both are common),
+# either change LCD_ADDRESS in the sketch or run an I2C scanner sketch to
+# discover the address. The two are not interchangeable across boards.

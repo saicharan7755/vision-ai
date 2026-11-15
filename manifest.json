@@ -1,0 +1,23 @@
+{
+  "name": "VISION AI — See Beyond Expressions",
+  "short_name": "VISION AI",
+  "description": "Real-time facial emotion detection that runs entirely on your device.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF6B00",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+================================================================================
+VISION AI — HARDWARE BRIDGE SCHEMATIC & WIRING GUIDE
+================================================================================
+
+Target board: Arduino Uno R3 (ATmega328P, 5 V logic)
+
+                                   ┌──────────────────────┐
+                                   │      ARDUINO UNO     │
+                                   │                      │
+   USB (from computer) ────────────► USB                  │
+   Web Serial @ 115200 baud        │                      │
+                                   │  D6 ─────────────────┼──► [1] NEOPIXEL DIN
+                                   │  D8 ─────────────────┼──► [2] BUZZER  +
+                                   │  D9 ─────────────────┼──► [3] SERVO   SIGNAL
+                                   │  5V ────┬────────────┼──► [1] NEOPIXEL +5V
+                                   │         ├────────────┼──► [2] BUZZER  −
+                                   │         └────────────┼──► [3] SERVO   +5V (red)
+                                   │  GND ──┬─────────────┼──► [1] NEOPIXEL GND
+                                   │        ├─────────────┼──► [2] BUZZER  (n/a — see note)
+                                   │        └─────────────┼──► [3] SERVO   GND (brown)
+                                   │  A4/SDA ─────────────┼──► [4] LCD  SDA
+                                   │  A5/SCL ─────────────┼──► [4] LCD  SCL
+                                   │  5V ─────────────────┼──► [4] LCD  VCC
+                                   │  GND ────────────────┼──► [4] LCD  GND
+                                   └──────────────────────┘
+
+--------------------------------------------------------------------------------
+[1] WS2812B NEOPIXEL RING — 16 LEDs
+--------------------------------------------------------------------------------
+  Ring pin        Uno pin        Wire colour (typical)
+  ─────────────   ───────────    ──────────────────────
+  DIN (data in)   D6             White / Green
+  +5V             5V             Red
+  GND             GND            Black
+
+  • Data flows IN through DIN. If your ring has DOUT, leave it unconnected
+    (or chain a second ring from it).
+  • Power draw: up to ~60 mA/LED at full white = ~960 mA for 16 LEDs.
+    The sketch caps brightness at 90/255, so worst case is ~340 mA. Still
+    above what USB alone likes to supply alongside a servo — see POWER.
+
+--------------------------------------------------------------------------------
+[2] ACTIVE 5V BUZZER (2-pin, has internal oscillator)
+--------------------------------------------------------------------------------
+  Buzzer pin      Uno pin
+  ─────────────   ───────────
+  + (long leg)    D8
+  − (short leg)   GND
+
+  • "Active" means it beeps when given DC. A 3-pin "passive" buzzer will
+    only click — that type needs a PWM tone() signal instead of HIGH/LOW.
+  • The sketch drives D8 HIGH for 80 ms on alerts.
+
+--------------------------------------------------------------------------------
+[3] SG90 SERVO — VALENCE GAUGE
+--------------------------------------------------------------------------------
+  Servo wire      Uno pin        Colour (typical)
+  ─────────────   ───────────    ─────────────────
+  Signal          D9             Orange / Yellow
+  +5V             5V             Red
+  GND             GND            Brown / Black
+
+  • Needle scale: 0° = ANGRY, 90° = NEUTRAL, 180° = HAPPY.
+  • The sketch eases the angle one degree at a time to keep a cheap SG90
+    from stalling on large swings.
+  • IMPORTANT: the Servo library uses Timer1, which disables analogWrite()
+    PWM on pins 9 and 10. Those pins are fine as digital outputs (as here),
+    but do not move the servo to a pin you need PWM on.
+
+--------------------------------------------------------------------------------
+[4] 16x2 I2C LCD (PCF8574 backpack, address 0x27)
+--------------------------------------------------------------------------------
+  LCD pin         Uno pin
+  ─────────────   ───────────
+  VCC             5V
+  GND             GND
+  SDA             A4
+  SCL             A5
+
+  • On the Uno, A4/A5 ARE the hardware I2C pins — the SDA/SCL pins near
+    AREF on R3 boards are the same bus, wired in parallel. Use either.
+  • Address is 0x27 on most backpacks; 0x3F on some. If the LCD lights but
+    prints nothing, run an I2C scanner sketch and change LCD_ADDRESS.
+
+--------------------------------------------------------------------------------
+POWER
+================================================================================
+  Recommended: power the Uno through USB, and give the NeoPixel ring and
+  servo their own 5 V supply (shared GND with the Uno).
+
+  Both the ring and the SG90 are current-hungry. An SG90 can pull
+  500–700 mA when stalling. On USB power alone, a servo sweep combined
+  with a bright ring will brown out the board and reset it mid-session —
+  the symptom is the LCD flashing and the serial link dropping.
+
+  A 5 V / 2 A external supply feeding the ring and servo (with grounds
+  tied to the Uno's GND) removes that entirely. Never feed 5 V into the
+  servo/ring from the Uno's 5V pin while also powering the Uno from USB.
+
+  ┌────────────────┐
+  │ 5V 2A PSU      │
+  │  + ────────────┼──► NeoPixel +5V, Servo red
+  │  − ────────────┼──► NeoPixel GND, Servo brown, AND Uno GND (common ground)
+  └────────────────┘
+
+--------------------------------------------------------------------------------
+SIGNAL INTEGRITY NOTES
+================================================================================
+  • Adafruit_NeoPixel briefly disables interrupts while shifting data out.
+    On an SG90 this can show up as faint jitter of the needle. It is
+    cosmetic and does not affect accuracy; the servo easing in the sketch
+    keeps it imperceptible. If it bothers you, power the servo separately
+    — most reported jitter is actually a voltage sag, not timing.
+  • Keep the NeoPixel data wire under ~30 cm. Longer runs without a
+    300–470 Ω series resistor on DIN can produce corrupted colours.
+  • A 1000 µF electrolytic capacitor across the ring's 5 V and GND is
+    the Adafruit-recommended protection against inrush current spikes.
+
+--------------------------------------------------------------------------------
+FULL PIN SUMMARY (quick reference)
+================================================================================
+  ┌───────────────────────────┬──────────────┬───────────────────────────────┐
+  │ Peripheral                │ Uno pin      │ Function                      │
+  ├───────────────────────────┼──────────────┼───────────────────────────────┤
+  │ WS2812B ring (16 LEDs)    │ D6           │ Emotion-coloured ambient ring │
+  │ Active buzzer             │ D8           │ 80 ms alert beep              │
+  │ SG90 servo                │ D9           │ Valence gauge needle          │
+  │ LCD 16x2 (I2C, 0x27)      │ A4 (SDA)     │ Label readout                 │
+  │ LCD 16x2 (I2C, 0x27)      │ A5 (SCL)     │ Label readout                 │
+  │ Serial (USB)              │ —            │ 115200 baud command input     │
+  └───────────────────────────┴──────────────┴───────────────────────────────┘
+
+  Free pins for expansion: D0/D1 (reserved for USB serial), D2, D3, D4,
+  D5, D7, D10 (no PWM while Servo is active), D11–D13, A0–A3.
+================================================================================

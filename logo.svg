@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="VISION AI">
+  <title>VISION AI</title>
+  <!-- orbital swoosh (behind the mark) -->
+  <path
+    d="M13.6 74.7 A50 20 -22 0 1 106.4 37.3"
+    fill="none"
+    stroke="#1E293B"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+  <!-- geometric V -->
+  <path
+    d="M22 28 H38 L60 78 L82 28 H98 L68 96 H52 Z"
+    fill="#FF6B00"
+  />
+</svg>
